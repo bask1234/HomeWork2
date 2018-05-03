@@ -3,9 +3,7 @@
 #include <map>
 #include <vector>
 #include <sstream>
-#include "file.hpp"
-#include "Folder.hpp"
-#include "Root.hpp"
+
 
 
 using namespace std;
@@ -118,31 +116,10 @@ void FillCommandMap(map<string,int>& commandMap) // this function fills the comm
     commandMap["exit"]=0;
 }
 
-file * fileFinder2(string * searchedFileName, Folder & targetFolder) throw (file *)
-{
-    int tempInt;
-    if(targetFolder.FilesVectorGetter().empty()==true)
-            {
-                return nullptr;
-            }
-    for(unsigned long i=0;i<targetFolder.FilesVectorGetter().size();i++)
-            {
-                //if(targetFolder.FilesVectorGetter()[i]->fileName==searchedFileName)
-                //if((tempInt=targetFolder.FilesVectorGetter()[i]->fileName->compare(*searchedFileName))==0)
-            tempInt=targetFolder.FilesVectorGetter()[i]->fileName->compare(*searchedFileName);
-            if(tempInt==0) // checks if the file exists in the folder
-                {
-                    return(targetFolder.FilesVectorGetter()[i]);
-                    break;
-                }
-            }
-            return nullptr;
-}
 
         
         
-        
-void RunCommand(vector<string>& parsedInput,map<string,int>& commandNumbersMap, Folder & targetFolder , Folder & rootFolder)
+void RunCommand(vector<string>& parsedInput,map<string,int>& commandNumbersMap)
 {
     // data members
     string commandName;
@@ -152,9 +129,7 @@ void RunCommand(vector<string>& parsedInput,map<string,int>& commandNumbersMap, 
     
     vector<string> pathsVector;
     vector<string> secondPathVector; // is used just in case there are 2 path arguments
-    file * tempFilePTR = nullptr;
-    file * tempFilePTR2 = nullptr;
-    Folder * tempFolderPTR =nullptr;
+
    
     // parsing
     if(parsedInput.size()>1)
@@ -186,339 +161,56 @@ void RunCommand(vector<string>& parsedInput,map<string,int>& commandNumbersMap, 
     {
         case 1: // read
         {
-            char a;
-            int tempIndex;
-            try {
-                tempIndex=stoi(*arg2);
-                tempIndex++;
-            } catch (exception) {
-                cerr << "ERROE: argument 2 was not a number";
-            }
-            
-            try
-            { // finds if the file and folder we want exists
-                tempFolderPTR=rootFolder.FilePathFinder(pathsVector, rootFolder, 1);
-            }
-            catch (const char * e)
-            {
-                cerr << " ERROR: " << e;
-                break;
-            }
-            tempFilePTR=fileFinder2(pathLastIndex, *tempFolderPTR); // looking for the file in the path given to us
-            if(tempFilePTR==nullptr)
-            {
-                cerr << " ERROR: file does not exist";
-                break; // discontinue the case
-            }
-            tempFilePTR->dereferenceVAL().data->open(*pathLastIndex, std::ios::in | std::ios::out | std::ios::app);
-            // opens file
-            if(tempFilePTR->dereferenceVAL().data->gcount()< tempIndex)
-                throw "not enough characters in the file";
-            for( int i=0;i<tempIndex;i++)
-            {
-                a=tempFilePTR->dereferenceVAL().data->get();
-            }
-            tempFilePTR->dereferenceVAL().data->close();
-            //cout << tempFilePTR->read(pathLastIndex, tempIndex) << endl;
-            break;
-            
+          
         }
+            
+        
+        
         case 2: // write
         {
-            
-            int tempIndex;
-            char tempChar;
-            // checking arguements
-            if(arg2->size()>1)
-                throw(" invalid number of characters to write, only 1 character allowed ");
-            try {
-                  tempIndex=stoi(*arg2);
-            } catch (exception) {
-                cerr << "ERROE: argument 2 was not a number";
-            }
-            try {
-                 tempChar=*arg3->c_str();
-            } catch (exception) {
-                cerr << "ERROE: argument 3 was not a char";
-            }
-            // checking if the path exists
-            try
-            { // finds if the file and folder we want exists
-                tempFolderPTR=rootFolder.FilePathFinder(pathsVector, rootFolder, 1);
-            }
-            catch (const char * e)
-            {
-                cerr << " ERROR: " << e;
-                break;
-            }
-            
-            // CHECKS DONE
-    
-            tempFilePTR=fileFinder2(pathLastIndex, *tempFolderPTR); // looking for the file in the path given to us
-            if(tempFilePTR==nullptr)
-            {
-                tempFilePTR = new file(pathLastIndex);
-                tempFolderPTR->FilesVectorGetter().push_back(tempFilePTR);
-            }
-            try
-            {
-                tempFilePTR->dereferenceVAL().data->open(*pathLastIndex, std::ios::in | std::ios::out | std::ios::app);
-                // opens file
-                *tempFilePTR->dereferenceVAL().data << tempChar;
-                tempFilePTR->dereferenceVAL().data->close();
-                tempFilePTR->write(pathLastIndex, tempIndex, tempChar);
-                break;
-            }
-            catch (const char * e)
-            {
-                cerr << " ERROR: " << e;
-                break;
-            }
+          
         }
     
         case 3:// touch
         {
-            tempFolderPTR=rootFolder.FilePathFinder(pathsVector, rootFolder, 1); // finds the folder
-            tempFilePTR=fileFinder2(pathLastIndex, *tempFolderPTR); // finds the file
-                if(tempFilePTR==nullptr) // if file does not exist
-                {
-                    tempFilePTR = new file(pathLastIndex); // allocating new file
-                    tempFolderPTR->FilesVectorGetter().push_back(tempFilePTR); // adding the new file to the file vector
-                    tempFilePTR->touch(pathLastIndex);
-                    break;
-                }
-                tempFilePTR->touch(pathLastIndex);
-                break;
+           
         }
         
         case 4: // copy
         {
-            try {
-                    tempFolderPTR=rootFolder.FilePathFinder(pathsVector, rootFolder, 0);
-                }
-            catch (const char * e)
-            {
-                cerr << " ERROR: " << e;
-                break;
-            }
-            try {
-                tempFilePTR=tempFolderPTR->FilesVectorGetter()[vectorIndex]; // turning tempFilePTR into source file
-            }
-            catch (const char * e) // incase source file does not exist
-            {
-                cerr << " ERROR: " << e;
-                break;
-            }
-            try {
-                tempFolderPTR=rootFolder.FilePathFinder(secondPathVector, rootFolder, 0); // searching the path to target file
-            }
-            catch (const char * e)
-            {
-                cerr << " ERROR: " << e;
-                break;
-            }
-            try {
-                tempFilePTR=tempFolderPTR->FilesVectorGetter()[vectorIndex]; // turning tempFilePTR into source file
-            }
-            catch (const char * e) // incase target file does not exist
-            {
-                tempFilePTR2 = new file(secondPathLastIndex);
-                tempFilePTR2->touch(pathLastIndex); // refresh the file makes
-                targetFolder.FilesVectorGetter().push_back(tempFilePTR2);
-            }
-
-            // we have both files at the tempFilePTRs
-            tempFilePTR->copy(tempFilePTR2->fileName, *tempFilePTR2); // copy source file to target file
-            
-            break;
+           
         }
         case 5: // remove
         {
-            try {
-                tempFolderPTR=rootFolder.FilePathFinder(pathsVector, rootFolder, 0);
-            }
-            catch (const char * e)
-            {
-                cerr << " ERROR: " << e;
-                break;
-            }
-            // looking for file
-            tempFilePTR=fileFinder2(pathLastIndex, *tempFolderPTR); // looking for the file in the path given to us
-            if(tempFilePTR==nullptr)
-            {
-                cerr << " ERROR: file does not exist";
-                break; // discontinue the case
-            }
-            tempFilePTR->remove(secondPathLastIndex);
-            break;
+          
         }
         case 6: // move
         {
-            // looking for folder
-            try {
-                tempFolderPTR=rootFolder.FilePathFinder(pathsVector, rootFolder, 0);
-            }
-            catch (const char * e)
-            {
-                cerr << " ERROR: " << e;
-                break;
-            }
-            // looking for file
-            tempFilePTR=fileFinder2(pathLastIndex, *tempFolderPTR); // looking for the file in the path given to us
-            if(tempFilePTR==nullptr)
-            {
-                cerr << " ERROR: file does not exist";
-                break; // discontinue the case
-            }
-            // looking for second folder
-            try {
-                tempFolderPTR=rootFolder.FilePathFinder(secondPathVector, rootFolder, 0);
-            }
-            catch (const char * e)
-            {
-                cerr << " ERROR: " << e;
-                break;
-            }
-            // looking for second file
-            tempFilePTR2=fileFinder2(secondPathLastIndex, *tempFolderPTR); // looking for the file in the path given to us
-            if(tempFilePTR==nullptr)
-            {
-                cerr << " ERROR: file does not exist";
-                break; // discontinue the case
-            }
-            tempFilePTR->move(secondPathLastIndex, *tempFilePTR2);
-            break;
+          
+           
+          
         }
         case 7: // cat
         {
-            // looking for folder
-            try {
-                tempFolderPTR=rootFolder.FilePathFinder(pathsVector, rootFolder, 0);
-            }
-            catch (const char * e)
-            {
-                cerr << " ERROR: " << e;
-                break;
-            }
-            // looking for file
-            tempFilePTR=fileFinder2(pathLastIndex, *tempFolderPTR); // looking for the file in the path given to us
-            if(tempFilePTR==nullptr)
-            {
-                cerr << " ERROR: file does not exist";
-                break; // discontinue the case
-            }
-            tempFilePTR->cat();
-            break;
+          
         }
         case 8: // wc
         {
-            // looking for folder
-            try {
-                tempFolderPTR=rootFolder.FilePathFinder(pathsVector, rootFolder, 0);
-            }
-            catch (const char * e)
-            {
-                cerr << " ERROR: " << e;
-                break;
-            }
-            // looking for file
-            tempFilePTR=fileFinder2(pathLastIndex, *tempFolderPTR); // looking for the file in the path given to us
-            if(tempFilePTR==nullptr)
-            {
-                cerr << " ERROR: file does not exist";
-                break; // discontinue the case
-            }
-            tempFilePTR->wc();
-            break;
-        }
-        case 9: // ln
-        {
-            unsigned int i;
-            tempFolderPTR=rootFolder.FilePathFinder(pathsVector, rootFolder, 0); // searching for 1st path
             
-            for(i=0;i<tempFolderPTR->FilesVectorGetter().size();i++)
-            {
-                if(tempFolderPTR->FilesVectorGetter()[i]->fileName==pathLastIndex) // searching the first file
-                    tempFilePTR=tempFolderPTR->FilesVectorGetter()[i];
-                if(i==tempFolderPTR->FilesVectorGetter().size()) // the file does not exist
-                {
-                    throw "  file a does not exist";
-                }
-            }
-            tempFolderPTR=rootFolder.FilePathFinder(secondPathVector, rootFolder, 0); // searching for 2nd path
-            for(i=0;i<tempFolderPTR->FilesVectorGetter().size();i++)
-            {
-                if(tempFolderPTR->FilesVectorGetter()[i]->fileName==pathLastIndex) // searching the first file
-                    tempFilePTR2=tempFolderPTR->FilesVectorGetter()[i];
-                if(i==tempFolderPTR->FilesVectorGetter().size()) // the file does not exist
-                {
-                    throw "  file a does not exist";
-                }
-            }
-            tempFilePTR2->ln(tempFilePTR);
-            
-            break;
         }
         case 10: // mkdir
         {
-            try{
-                tempFolderPTR=rootFolder.FolderPathFinder(pathsVector, rootFolder, 1);
-            }
-            catch (const char * e)
-            {
-                cerr << "EXCEPTION: " << e << endl;
-                 break;
-            }
-           
-             tempFolderPTR->mkdir(pathLastIndex); // adds a new folder to the path's vector
-             break;
+            
         }
             
         case 11: // chdir
         {
-            try{
-                rootFolder.chdir(pathsVector, rootFolder);
-            }
-            catch (const char * e)
-            {
-                cerr << "EXCEPTION: " << e << endl;
-                break;
-            }
-            throw targetFolder.chdir(pathsVector, rootFolder);
-            break;
+            
         }
          
         case 12:// rmdir
         {
-            try {
-                tempFolderPTR=rootFolder.FolderPathFinder(pathsVector, rootFolder, 0);
-            }
-            catch (const char * e)
-            {
-                cerr << " ERROR: " << e;
-                break;
-            }
-            tempFolderPTR->rmdir(pathsVector, rootFolder);
-            break;
-        }
-        case 13: // ls
-        {
-            targetFolder.ls();
-            break;
-        }
-        case 14: // lproot
-        {
-            rootFolder.lproot();
-            break;
-        }
-        case 15: // pwd
-        {
-            targetFolder.pwd();
-            break;
-        }
-        case 16: // exit beein made at the menu function
-        {
-            break;
+            
         }
         default: std::cout << "default\n"; // no error
             break;
@@ -547,16 +239,10 @@ void Menu (vector<string>& menuVector)
     vector<string> commandVector; // this will hold command names
     map<string,int> commandMap; // this will hold command names and num of arguments the command uses
     map<string,int> commandNunmbersMap; // this will hold command names and num of arguments the command uses
-    Root * rootDirectory;
-    
+
     
     //initialaize folder directory to root
-    rootDirectory = new Root;
-    Folder * rootDirectoryPTR;
-    rootDirectoryPTR=rootDirectory->innerFoldersVector.at(0);
-    Folder * targetFolderTEMP = nullptr;
-    targetFolderTEMP=rootDirectory->innerFoldersVector[0];
-    
+
     
     // fill data members
     FillCommandNamesVector(menuVector, commandVector); // extracting the command names from the menuVector
@@ -577,16 +263,9 @@ void Menu (vector<string>& menuVector)
                 {
                     try
                     {
-                        RunCommand(parsedInput, commandNunmbersMap,*targetFolderTEMP, *rootDirectoryPTR);
+                        RunCommand(parsedInput, commandNunmbersMap);
                     }
-                    catch (Folder * changeTargetToThat) // catching folder from chdir
-                    {
-                        targetFolderTEMP = changeTargetToThat;
-                    }
-                    catch (Folder changeTargetToThis) // catching folder from chdir
-                    {
-                        *targetFolderTEMP = changeTargetToThis;
-                    }
+                 
                     catch (const char * e)
                     {
                         cerr << "EXCEPTION: " << e << endl;
